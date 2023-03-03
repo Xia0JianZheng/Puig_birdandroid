@@ -10,6 +10,9 @@ public class Pipe extends Actor {
     Rectangle bounds;
     boolean upsideDown;
     AssetManager manager;
+    float speedy, gravity;
+
+    private boolean breaked;
     Pipe()
     {
         setSize(64, 230);
@@ -19,12 +22,20 @@ public class Pipe extends Actor {
     @Override
     public void act(float delta)
     {
-        moveBy(-200 * delta, 0);
-        bounds.set(getX(), getY(), getWidth(), getHeight());
-        if(!isVisible())
-            setVisible(true);
-        if (getX() < -64)
-            remove();
+        if(!breaked){
+            moveBy(-200 * delta, 0);
+            bounds.set(getX(), getY(), getWidth(), getHeight());
+            if(!isVisible())
+                setVisible(true);
+            if (getX() < -64)
+                remove();
+    }else{
+            moveBy(0, speedy * delta);
+            //Actualitza la velocitat vertical amb la gravetat
+            speedy -= gravity * delta;
+            bounds.set(getX(), getY(), getWidth(), getHeight());
+        }
+
 
     }
     @Override
@@ -45,5 +56,10 @@ public class Pipe extends Actor {
     public void setManager(AssetManager manager) {
         this.manager = manager;
     }
+
+    public void setBreaked(boolean breaked) {
+        this.breaked = breaked;
+    }
+
 }
 

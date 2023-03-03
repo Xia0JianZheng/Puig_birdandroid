@@ -34,7 +34,12 @@ public class Player extends Actor {
     @Override
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
-        batch.draw(manager.get("bird.png", Texture.class), getX(), getY());
+        if(hasShield){
+            batch.draw(manager.get("bird_blue.png", Texture.class), getX(), getY());
+        }else{
+            batch.draw(manager.get("bird.png", Texture.class), getX(), getY());
+        }
+
     }
     public Rectangle getBounds() {
         return bounds;
@@ -55,5 +60,10 @@ public class Player extends Actor {
         this.hasShield = hasShield;
     }
 
-
+    public boolean collidesWithShield(Shield shield) {
+        return bounds.overlaps(shield.getBounds());
+    }
+    public boolean collidesWithEnemy(Enemy enemy) {
+        return bounds.overlaps(enemy.getBounds());
+    }
 }

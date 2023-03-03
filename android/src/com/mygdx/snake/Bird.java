@@ -36,10 +36,13 @@ public class Bird extends Game {
         this.setScreen(new MainMenuScreen(this));
         manager = new AssetManager();
         manager.load("bird.png", Texture.class);
+        manager.load("bird_blue.png", Texture.class);
         manager.load("pipe_up.png", Texture.class);
         manager.load("pipe_down.png", Texture.class);
         manager.load("background.png", Texture.class);
         manager.load("shield.png", Texture.class);
+        manager.load("fireball.png", Texture.class);
+        manager.load("pipe_up_break.png", Texture.class);
         manager.finishLoading();
         topScore = 0;
         lastScore = 0;

@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.ScreenUtils;
 import com.badlogic.gdx.utils.TimeUtils;
+import com.badlogic.gdx.utils.Timer;
 
 import java.util.Iterator;
 
@@ -21,10 +22,13 @@ public class GameScreen implements Screen {
     boolean dead;
     Array<Pipe> obstacles;
     Array<Shield> shields;
+    Array<Enemy> enemys;
     long lastObstacleTime;
     long lastShieldTime;
+    long lastEnemyTime;
     float score;
     float holey;
+    boolean shieldTouch;
     public GameScreen(final Bird gam) {
         this.game = gam;
 
@@ -40,9 +44,9 @@ public class GameScreen implements Screen {
 
         // create the obstacles array and spawn the first obstacle
         obstacles = new Array<Pipe>();
-        shields = new Array<Shield>();
+        shields = new Array<>();
+        enemys = new Array<>();
         spawnObstacle();
-        spawnShield();
         score = 0;
     }
     @Override
@@ -80,9 +84,45 @@ public class GameScreen implements Screen {
             dead = true;
         }
 
+        if (TimeUtils.nanoTime() - lastShieldTime > 5500000000L){
+            spawnShield();
+            shieldTouch = true;
+        }
+
+        if (TimeUtils.nanoTime() - lastEnemyTime > 6500000000L){
+            spawnEnemy();
+        }
+
+        for (Shield shield : shields) {
+            if (player.collidesWithShield(shield)) {
+                // Handle collision between player and shield
+                player.setHasShield(true);
+                shield.remove();
+                shields.removeIndex(0);
+            }
+        }
+
+        for (Enemy enemy : enemys) {
+            if (player.collidesWithEnemy(enemy))
+                if(player.hasShield()) {
+                    Timer.schedule(new Timer.Task() {
+                        @Override
+                        public void run() {
+                            // Remove the shield
+                            player.setHasShield(false);
+
+                        }
+                    }, 0.75f);
+                }else {
+                    dead = true;
+                }
+            }
+
+
         // Comprova si cal generar un obstacle nou
         if (TimeUtils.nanoTime() - lastObstacleTime > 1500000000)
             spawnObstacle();
+
 
 // Comprova si les tuberies colisionen amb el jugador
         Iterator<Pipe> iter = obstacles.iterator();
@@ -90,7 +130,24 @@ public class GameScreen implements Screen {
             Pipe pipe = iter.next();
             if (pipe.getBounds().overlaps(player.getBounds())) {
                 if(player.hasShield()) {
-                    player.setHasShield(false);
+
+                    if(player.getY() + player.getHeight() > 480 - 45 ){
+                        pipe.setManager(game.manager.get("pipe_up_break.png"));
+                        pipe.setBreaked(true);
+
+                    }else {
+                        pipe.setUpsideDown(true);
+                        pipe.setManager(game.manager.get("pipe_up_break.png"));
+                        pipe.setBreaked(true);
+                    }
+
+                    Timer.schedule(new Timer.Task() {
+                        @Override
+                        public void run() {
+                            // Remove the shield
+                            player.setHasShield(false);
+                        }
+                    }, 0.75f);
                 }else {
                     dead = true;
                 }
@@ -106,15 +163,6 @@ public class GameScreen implements Screen {
             }
         }
 
-
-        for (Iterator<Shield> shield = shields.iterator(); shield.hasNext();) {
-            Shield shieldItem = shield.next();
-            if (player.getBounds().overlaps(shieldItem.getBounds())) {
-                player.setHasShield(true);
-                iter.remove();
-                shieldItem.remove();
-            }
-        }
 
         if(dead)
         {
@@ -143,16 +191,30 @@ public class GameScreen implements Screen {
         obstacles.add(pipe2);
         stage.addActor(pipe2);
         lastObstacleTime = TimeUtils.nanoTime();
-
-        if (MathUtils.randomBoolean(0.2f)) {
-            Shield shieldItem = new Shield();
-            shields.add(shieldItem);
-            stage.addActor(shieldItem);
-        }
     }
 
     private void spawnShield(){
+        float holey = MathUtils.random(50, 230);
+        Shield shieldItem = new Shield();
+        shieldItem.setX(800);
+        shieldItem.setY(holey);
+        shieldItem.setManager(game.manager);
+        shields.add(shieldItem);
+        stage.addActor(shieldItem);
+        lastShieldTime = TimeUtils.nanoTime();
     }
+
+    private void spawnEnemy(){
+        float holey = MathUtils.random(50, 230);
+        Enemy enemy = new Enemy();
+        enemy.setX(800);
+        enemy.setY(holey);
+        enemy.setManager(game.manager);
+        enemys.add(enemy);
+        stage.addActor(enemy);
+        lastEnemyTime = TimeUtils.nanoTime();
+    }
+
 
     @Override
     public void resize(int width, int height) {
