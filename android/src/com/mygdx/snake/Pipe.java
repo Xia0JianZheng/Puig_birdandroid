@@ -22,21 +22,12 @@ public class Pipe extends Actor {
     @Override
     public void act(float delta)
     {
-        if(!breaked){
             moveBy(-200 * delta, 0);
             bounds.set(getX(), getY(), getWidth(), getHeight());
             if(!isVisible())
                 setVisible(true);
             if (getX() < -64)
                 remove();
-    }else{
-            moveBy(0, speedy * delta);
-            //Actualitza la velocitat vertical amb la gravetat
-            speedy -= gravity * delta;
-            bounds.set(getX(), getY(), getWidth(), getHeight());
-        }
-
-
     }
     @Override
     public void draw(Batch batch, float parentAlpha) {

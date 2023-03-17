@@ -84,6 +84,14 @@ public class GameScreen implements Screen {
             dead = true;
         }
 
+        game.batch.begin();
+        game.smallFont.draw(game.batch, "Score: " + (int)score, 10,
+                470);
+        game.batch.end();
+
+//La puntuació augmenta amb el temps de joc
+        score += Gdx.graphics.getDeltaTime();
+
         if (TimeUtils.nanoTime() - lastShieldTime > 5500000000L){
             spawnShield();
             shieldTouch = true;
@@ -131,15 +139,8 @@ public class GameScreen implements Screen {
             if (pipe.getBounds().overlaps(player.getBounds())) {
                 if(player.hasShield()) {
 
-                    if(player.getY() + player.getHeight() > 480 - 45 ){
-                        pipe.setManager(game.manager.get("pipe_up_break.png"));
+                        pipe.setManager(game.manager);
                         pipe.setBreaked(true);
-
-                    }else {
-                        pipe.setUpsideDown(true);
-                        pipe.setManager(game.manager.get("pipe_up_break.png"));
-                        pipe.setBreaked(true);
-                    }
 
                     Timer.schedule(new Timer.Task() {
                         @Override
@@ -166,6 +167,9 @@ public class GameScreen implements Screen {
 
         if(dead)
         {
+            game.lastScore = (int)score;
+            if(game.lastScore > game.topScore)
+                game.topScore = game.lastScore;
             //game.manager.get("fail.wav",    Sound.class).play();
             game.setScreen(new GameOverScreen(game));
             dispose();
